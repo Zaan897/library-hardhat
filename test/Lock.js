@@ -25,7 +25,7 @@ describe("Library", function(){
       expect(book.author).to.equal(author);
     });
 
-    it("should revert if book with same ISBN already exists", async function() {
+    it("should revert if book with this ISBN already exists", async function() {
       await expect(
         library.addBook(ISBN, "IDK", 2011, "Forgotten Hope")
       ).to.be.revertedWith("Book with this ISBN already exists");
@@ -40,7 +40,7 @@ describe("Library", function(){
       expect(updatedBook.title).to.equal(newTitle);
     });
   
-    it("should revert if book does not exists", async function() {
+    it("should revert if book with this ISBN not found", async function() {
       await expect(
         library.updateBook("ISBN", "Aircraft", 2019, "HoneyComeBear")
       ).to.be.revertedWith("Book with this ISBN not found");
