@@ -5,23 +5,22 @@
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
 const hre = require("hardhat");
+const { ethers } = require("ethers");
+
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const Library = await hre.ethers.getContractFactory("Library");
+  const library = await Library.deploy();
 
-  // Ganti "Lock" dengan "Library" di bawah ini
-  const library = await hre.ethers.deployContract("Library", {
-    value: hre.ethers.utils.parseEther("0.001"),
-  });
 
   await library.waitForDeployment();
 
+  console.log("contract deployed to: ", library.target);
+
+  await library.addBook("1234", "sample book", 2016, "Sammy");
   console.log(
-    `Library with ${hre.ethers.formatEther(
-      hre.ethers.utils.parseEther("0.001")
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${library.target}`
-  );
+    await library.getBookData("1234")
+  )
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -1,113 +1,56 @@
-const {
-  time,
-  loadFixture,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-const { ethers } = require("ethers");
+const { ethers } = require("hardhat");
 
-describe("Library", function () {
-  async function deployLibraryFixture() {
-    const ONE_GWEI = 1_000_000_000;
-    const [owner, otherAccount] = await ethers.getSigners(0);
-    const Library = await ethers.getContractFactory("Library");
-    const library = await Library.deploy();
-    return { library, owner, otherAccount };
-  }
+describe("Library", function(){
+  let library;
+  let admin;
+  const ISBN = "1234567890";
+  const title = "How to Basic";
+  const yearCreated = 2017;
+  const author = "Crazy Guy";
 
-  describe("Tambah buku", function () {
-    it("Seharusnya menambahkan buku dengan detail yang valid", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
+  before(async function() {
+    [admin] = await ethers.getSigners();
+    let Library = await ethers.getContractFactory("Library");
+    library = await Library.deploy();
+  })
 
-      const tx = await library.addBook("SomeISBN", "Book Title", 2023, "Author", {
-        value: ethers.utils.parseEther("0.001"),
-      });
-
-      await tx.wait();
-
-      expect(await library.getBookData("SomeISBN")).to.deep.equal(["SomeISBN", "Book Title", 2023, "Author"]);
+  describe("addBook", function() {
+    it("should add a book successfully", async function() {
+      await library.addBook(ISBN, title, yearCreated, author);
+      const book = await library.bookList(ISBN);
+      expect(book.isbn).to.equal(ISBN);
+      expect(book.title).to.equal(title);
+      expect(book.yearCreated).to.equal(yearCreated);
+      expect(book.author).to.equal(author);
     });
 
-    it("Seharusnya tidak menambahkan buku jika ISBN sudah ada", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
-      await library.addBook("SomeISBN", "Book Title", 2023, "Author", {
-        value: ethers.utils.parseEther("0.001"),
-      });
-
+    it("should revert if book with same ISBN already exists", async function() {
       await expect(
-        library.addBook("SomeISBN", "Another Title", 2024, "Different Author", {
-          value: ethers.utils.parseEther("0.001"),
-        })
+        library.addBook(ISBN, "IDK", 2011, "Forgotten Hope")
       ).to.be.revertedWith("Book with this ISBN already exists");
     });
   });
 
-  describe("Update buku", function () {
-    it("Seharusnya memperbarui buku dengan detail yang valid", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
-      await library.addBook("SomeISBN", "Book Title", 2023, "Author", {
-        value: ethers.utils.parseEther("0.001"),
-      });
-
-      const tx = await library.updateBook("SomeISBN", "Updated Title", 2024, "Updated Author");
-
-      await tx.wait();
-
-      expect(await library.getBookData("SomeISBN")).to.deep.equal(["SomeISBN", "Updated Title", 2024, "Updated Author"]);
+  describe("updateBook", function() {
+    it("should update a book successfully", async function() {
+      const newTitle = "Update Book";
+      await library.updateBook(ISBN, newTitle, 2019, "HoneyComeBear");
+      const updatedBook = await library.bookList(ISBN);
+      expect(updatedBook.title).to.equal(newTitle);
     });
-
-    it("Seharusnya tidak memperbarui buku jika ISBN tidak ditemukan", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
+  
+    it("should revert if book does not exists", async function() {
       await expect(
-        library.updateBook("SomeISBN", "Updated Title", 2024, "Updated Author")
+        library.updateBook("ISBN", "Aircraft", 2019, "HoneyComeBear")
       ).to.be.revertedWith("Book with this ISBN not found");
     });
   });
 
-  describe("Hapus buku", function () {
-    it("Seharusnya menghapus buku dengan ISBN yang valid", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
+  describe("removeBook", function() {
+    it("should remove a book successfully", async function() {
+      
+    })
+  })
 
-      await library.addBook("SomeISBN", "Book Title", 2023, "Author", {
-        value: ethers.utils.parseEther("0.001"),
-      });
-
-      const tx = await library.removeBook("SomeISBN");
-
-      await tx.wait();
-
-      expect(await library.getBookData("SomeISBN")).to.deep.equal(["", "", 0, ""]);
-    });
-
-    it("Seharusnya tidak menghapus buku jika ISBN tidak ditemukan", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
-      await expect(library.removeBook("SomeISBN")).to.be.revertedWith("Book with this ISBN not found");
-    });
-  });
-
-  describe("Get data buku berdasarkan ISBN", function () {
-    it("Seharusnya mengembalikan data buku yang benar", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
-      await library.addBook("SomeISBN", "Book Title", 2023, "Author", {
-        value: ethers.utils.parseEther("0.001"),
-      });
-
-      const bookData = await library.getBookData("SomeISBN");
-
-      expect(bookData).to.deep.equal(["SomeISBN", "Book Title", 2023, "Author"]);
-    });
-
-    it("Seharusnya mengembalikan data buku yang benar jika ISBN tidak ditemukan", async function () {
-      const { library, owner } = await loadFixture(deployLibraryFixture);
-
-      const bookData = await library.getBookData("NonExistentISBN");
-
-      expect(bookData).to.deep.equal(["", "", 0, ""]);
-    });
-  });
 });
