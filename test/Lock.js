@@ -32,6 +32,22 @@ describe("Library", function(){
     });
   });
 
+  describe("getBookData", function() {
+    it("should return book data if the book exists", async function() {
+      const bookData = await library.getBookData(ISBN);
+      expect(bookData[0]).to.equal(ISBN);
+      expect(bookData[1]).to.equal(title);
+      expect(bookData[2]).to.equal(yearCreated);
+      expect(bookData[3]).to.equal(author);
+    });
+
+    it("should revert if the book does not exist", async function() {
+      await expect(
+        library.getBookData("ISBN")
+      ).to.be.revertedWith("Book with this ISBN not found");
+    });
+  });
+
   describe("updateBook", function() {
     it("should update a book successfully", async function() {
       const newTitle = "Update Book";
@@ -49,8 +65,17 @@ describe("Library", function(){
 
   describe("removeBook", function() {
     it("should remove a book successfully", async function() {
-      
-    })
-  })
+      await library.removeBook(ISBN);
+      const removedBook = await library.bookList(ISBN);
+      expect(removedBook.ISBN).to.equal(undefined);
+    });
+
+    it("should revert if book with this ISBN not exists", async function() {
+      await expect(
+        library.removeBook(ISBN)
+      ).to.be.revertedWith("Book with this ISBN not found");
+    });
+  });
+
 
 });
