@@ -1,8 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox");
-// require("dotenv").config();
+
 
 /** @type import('hardhat/config').HardhatUserConfig */
-// const { API_URL, PRIVATE_KEY } = process.env;
+
 
 module.exports = {
   mumbai_testnet: {
