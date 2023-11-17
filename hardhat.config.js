@@ -7,7 +7,7 @@ require("@nomicfoundation/hardhat-toolbox");
 module.exports = {
   mumbai_testnet: {
     url: "https://rpc-mumbai.maticvigil.com",
-    accounts: PRIVATE_KEY
+    accounts: ["0xBebcE9bd142FB21d191fACd1452CC0d4fD3dE7eB"]
   },
   hardhat: {},
   solidity: "0.8.19",
